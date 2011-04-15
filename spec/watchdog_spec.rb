@@ -17,7 +17,7 @@ describe Watchdog do
 
     it "does raise error if methods conflict" do
       existing = create_methods Object.new, :blah
-      lambda { existing.extend safe_module }.should raise_error
+      lambda { existing.extend safe_module }.should raise_error(Watchdog::ExtendError)
     end
   end
 
@@ -31,7 +31,7 @@ describe Watchdog do
 
     it "does raise error if methods conflict" do
       existing = create_methods Module.new, :blah
-      lambda { existing.send :include, safe_module }.should raise_error
+      lambda { existing.send :include, safe_module }.should raise_error(Watchdog::IncludeError)
     end
   end
 end
