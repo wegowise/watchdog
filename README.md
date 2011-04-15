@@ -1,0 +1,4 @@
+Install
+=======
+
+  $ gem install watchdog
