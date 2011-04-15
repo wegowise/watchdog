@@ -15,8 +15,14 @@ describe Watchdog do
       lambda { existing.extend safe_module }.should_not raise_error
     end
 
-    it "does raise error if methods conflict" do
+    it "raises error if public methods conflict" do
       existing = create_methods Object.new, :blah
+      lambda { existing.extend safe_module }.should raise_error(Watchdog::ExtendError)
+    end
+
+    it "raises error if private methods conflict" do
+      existing = create_methods Object.new, :blah
+      class <<existing; self.send :private, :blah; end
       lambda { existing.extend safe_module }.should raise_error(Watchdog::ExtendError)
     end
   end
@@ -29,8 +35,14 @@ describe Watchdog do
       lambda { existing.send :include, safe_module }.should_not raise_error
     end
 
-    it "does raise error if methods conflict" do
+    it "raises error if public methods conflict" do
       existing = create_methods Module.new, :blah
+      lambda { existing.send :include, safe_module }.should raise_error(Watchdog::IncludeError)
+    end
+
+    it "raises error if private methods conflict" do
+      existing = create_methods Module.new, :blah
+      existing.send :private, :blah
       lambda { existing.send :include, safe_module }.should raise_error(Watchdog::IncludeError)
     end
   end

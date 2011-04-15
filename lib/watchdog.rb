@@ -8,15 +8,16 @@ module Watchdog
   class IncludeError < Error; end
 
   def append_features(mod)
-    self.instance_methods.each do |m|
-      raise IncludeError.new(m, self, mod) if mod.method_defined?(m)
+    existing = mod.private_instance_methods + mod.instance_methods
+    (existing & self.instance_methods).each do |m|
+      raise IncludeError.new(m, self, mod)
     end
     super
   end
 
   def extend_object(obj)
     self.instance_methods.each do |m|
-      raise ExtendError.new(m, self, obj) if obj.respond_to?(m)
+      raise ExtendError.new(m, self, obj) if obj.respond_to?(m, true)
     end
     super
   end
