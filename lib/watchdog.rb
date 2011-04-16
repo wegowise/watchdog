@@ -17,19 +17,42 @@ module Watchdog
   end
 
   module GermanShepard
+    def self.extend_object(obj)
+      if obj.respond_to? :method_added
+        Watchdog.create_guard :method_added, obj
+      elsif obj.respond_to? :singleton_method_added
+        Watchdog.create_guard :singleton_method_added, obj
+      end
+      super
+    end
+
     [:singleton_method_added, :method_added].each do |m|
       define_method(m) do |meth|
-        if Watchdog.extensions[self].instance_methods.map(&:to_sym).include?(meth)
-          raise Watchdog::ExtensionMethodExistsError.new(meth, self, Watchdog.extensions[self])
-        end
+        Watchdog.check(self, meth)
         super(meth)
       end
     end
   end
 
-  def self.guard(mod, guarded)
-    extensions[guarded] = mod
-    guarded.extend GermanShepard
+  def self.check(obj, meth)
+    if extensions[obj].instance_methods.map(&:to_sym).include?(meth)
+      raise ExtensionMethodExistsError.new(meth, obj, extensions[obj])
+    end
+  end
+
+  def self.create_guard(meth, obj)
+    meta = class <<obj; self end
+    original = meta.instance_method(meth)
+    meta.send(:define_method, meth) do |m|
+      Watchdog.check(self, m)
+      original.bind(obj).call(m)
+    end
+  end
+
+  # Guards extension methods from being overwritten
+  def self.guard(extension, extended)
+    extensions[extended] = extension
+    extended.extend GermanShepard
   end
 
   def append_features(mod)

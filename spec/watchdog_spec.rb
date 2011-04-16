@@ -38,6 +38,13 @@ describe Watchdog do
         existing = Object.new.extend extensions
         lambda { def existing.blah; end }.should raise_error(Watchdog::ExtensionMethodExistsError)
       end
+
+      it "raises error if it redefines extension methods for object with singleton_method_added" do
+        existing = Object.new
+        def existing.singleton_method_added(meth); end
+        existing.extend extensions
+        lambda { def existing.blah; end }.should raise_error(Watchdog::ExtensionMethodExistsError)
+      end
     end
   end
 
@@ -70,6 +77,14 @@ describe Watchdog do
 
       it "raises error if it redefines extension methods" do
         existing = Module.new.send :include, extensions
+        lambda {
+          existing.send(:define_method, :blah) { }
+        }.should raise_error(Watchdog::ExtensionMethodExistsError)
+      end
+
+      it "raises error if it redefines extension methods for module with method_added" do
+        existing = Module.new { def self.method_added(meth); end }
+        existing.send :include, extensions
         lambda {
           existing.send(:define_method, :blah) { }
         }.should raise_error(Watchdog::ExtensionMethodExistsError)
