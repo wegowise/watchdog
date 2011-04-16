@@ -11,7 +11,6 @@ Gem::Specification.new do |s|
   s.summary = "Watches over your extensions and monkey patches"
   s.description =  "Watchdog ensures your extensions and monkey patches don't redefine existing methods as well as get redefined by others."
   s.required_rubygems_version = ">= 1.3.6"
-  s.rubyforge_project = 'tagaholic'
   s.files = Dir.glob(%w[{lib,spec}/**/*.rb [A-Z]*.{txt,rdoc,md} *.gemspec]) + %w{Rakefile}
   s.extra_rdoc_files = ["README.md", "LICENSE.txt"]
   s.license = 'MIT'
