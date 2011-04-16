@@ -1,5 +1,6 @@
 require 'watchdog/error'
 require 'watchdog/german_shepard'
+require 'watchdog/version'
 
 module Watchdog
   # Maps objects or modules to their extension modules
