@@ -5,19 +5,24 @@ module Watchdog
 
   class Error < StandardError
     def initialize(meth, from, to)
-      super "#{from} can't add method '#{meth}' to #{to}"
+      mtype = to.is_a?(Module) ? '#' : '.'
+      super self.class::MESSAGE % [from, "#{to}#{mtype}#{meth}"]
     end
   end
-  class ExtendError < Error; end
-  class IncludeError < Error; end
+  class MethodExistsError < Error
+    MESSAGE = "%s not allowed to redefine existing method %s"
+  end
+  class ExtensionMethodExistsError < Error
+    MESSAGE = "%s not allowed to redefine extension method from %s"
+  end
 
   module GermanShepard
     [:singleton_method_added, :method_added].each do |m|
       define_method(m) do |meth|
         if Watchdog.extensions[self].instance_methods.map(&:to_sym).include?(meth)
-          raise Watchdog::Error.new(meth, self, Watchdog.extensions[self])
+          raise Watchdog::ExtensionMethodExistsError.new(meth, self, Watchdog.extensions[self])
         end
-        super
+        super(meth)
       end
     end
   end
@@ -31,7 +36,7 @@ module Watchdog
     Watchdog.guard(self, mod)
     existing = mod.private_instance_methods + mod.instance_methods
     (existing & self.instance_methods).each do |m|
-      raise IncludeError.new(m, self, mod)
+      raise MethodExistsError.new(m, self, mod)
     end
     super
   end
@@ -39,7 +44,7 @@ module Watchdog
   def extend_object(obj)
     Watchdog.guard(self, obj)
     self.instance_methods.each do |m|
-      raise ExtendError.new(m, self, obj) if obj.respond_to?(m, true)
+      raise MethodExistsError.new(m, self, obj) if obj.respond_to?(m, true)
     end
     super
   end
