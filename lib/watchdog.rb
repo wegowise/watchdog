@@ -14,7 +14,7 @@ module Watchdog
   module GermanShepard
     [:singleton_method_added, :method_added].each do |m|
       define_method(m) do |meth|
-        if Watchdog.extensions[self].instance_methods.include?(meth)
+        if Watchdog.extensions[self].instance_methods.map(&:to_sym).include?(meth)
           raise Watchdog::Error.new(meth, self, Watchdog.extensions[self])
         end
         super
