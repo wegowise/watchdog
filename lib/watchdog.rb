@@ -1,4 +1,8 @@
 module Watchdog
+  # Maps objects or modules to their extension modules
+  class <<self; attr_accessor :extensions; end
+  self.extensions = {}
+
   class Error < StandardError
     def initialize(meth, from, to)
       super "#{from} can't add method '#{meth}' to #{to}"
@@ -7,17 +11,20 @@ module Watchdog
   class ExtendError < Error; end
   class IncludeError < Error; end
 
-  def self.guard(mod, guarded)
-    guard_mod = Module.new { class << self; attr_accessor :existing; end }
-    guard_mod.existing = mod
-    guard_meth = guarded.is_a?(Module) ? :method_added : :singleton_method_added
-    guard_mod.send(:define_method, guard_meth) do |meth|
-      if guard_mod.existing.instance_methods.include?(meth)
-        raise Watchdog::Error.new(meth, self, mod)
+  module GermanShepard
+    [:singleton_method_added, :method_added].each do |m|
+      define_method(m) do |meth|
+        if Watchdog.extensions[self].instance_methods.include?(meth)
+          raise Watchdog::Error.new(meth, self, Watchdog.extensions[self])
+        end
+        super
       end
-      super
     end
-    guarded.extend guard_mod
+  end
+
+  def self.guard(mod, guarded)
+    extensions[guarded] = mod
+    guarded.extend GermanShepard
   end
 
   def append_features(mod)
