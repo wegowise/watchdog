@@ -68,4 +68,4 @@ Thanks to Wegowise for open-source time to make this possible!
 License
 =======
 
-See LICENSE file
+See LICENSE.txt
