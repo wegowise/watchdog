@@ -88,12 +88,20 @@ describe Watchdog do
           existing.send(:define_method, :blah) { }
         }.should raise_error(Watchdog::ExtensionMethodExistsError)
       end
+    end
 
-      it "doesn't guard if subclass of extended class" do
-        existing = Class.new.send :include, extensions
-        subclass = Class.new(existing)
-        lambda { subclass.send(:define_method, :blah) { } }.should_not raise_error
-      end
+    it "doesn't guard if subclass of extended class" do
+      existing = Class.new.send :include, extensions
+      subclass = Class.new(existing)
+      lambda { subclass.send(:define_method, :blah) { } }.should_not raise_error
+    end
+
+    it "creates one method_added guard per extended class" do
+      Watchdog::GermanShepard.created = []
+      existing = Class.new { def self.method_added(meth); end }.send :include, extensions
+      another_extensions = Module.new.extend(Watchdog)
+      existing.send :include, another_extensions
+      Watchdog::GermanShepard.created.size.should == 1
     end
   end
 end

@@ -3,7 +3,6 @@ require 'watchdog/german_shepard'
 require 'watchdog/version'
 
 module Watchdog
-  # Maps objects or modules to their extension modules
   class <<self; attr_accessor :extensions, :subclasses; end
   self.extensions, self.subclasses = {}, []
 
