@@ -4,12 +4,13 @@ require 'watchdog/version'
 
 module Watchdog
   # Maps objects or modules to their extension modules
-  class <<self; attr_accessor :extensions; end
-  self.extensions = {}
+  class <<self; attr_accessor :extensions, :subclasses; end
+  self.extensions, self.subclasses = {}, []
 
   # Guards extension methods from being overwritten
   def self.guard(obj, meth)
-    return if !extensions.key?(obj) && extensions.keys.
+    return if subclasses.include?(obj)
+    return subclasses << obj if !extensions.key?(obj) && extensions.keys.
       any? {|e| e.is_a?(Module) && e > obj }
     if extensions[obj].instance_methods.map(&:to_sym).include?(meth)
       raise ExtensionMethodExistsError.new(meth, obj, extensions[obj])
