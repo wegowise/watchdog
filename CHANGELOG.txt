@@ -1,0 +1,6 @@
+== 0.2.0
+* Fix multiple guards per extended class
+* Fix guarding for subclasses of extended classes
+
+== 0.1.0
+* Initial release
