@@ -53,17 +53,17 @@ describe Watchdog do
 
     context "new extension method" do
       it "doesn't raise error if no existing methods conflict" do
-        existing = Module.new
+        existing = Class.new
         lambda { existing.send :include, extensions }.should_not raise_error
       end
 
       it "raises error if existing public methods conflict" do
-        existing = create_methods Module.new, :blah
+        existing = create_methods Class.new, :blah
         lambda { existing.send :include, extensions }.should raise_error(Watchdog::MethodExistsError, /#blah/)
       end
 
       it "raises error if existing private methods conflict" do
-        existing = create_methods Module.new, :blah
+        existing = create_methods Class.new, :blah
         existing.send :private, :blah
         lambda { existing.send :include, extensions }.should raise_error(Watchdog::MethodExistsError)
       end
@@ -71,23 +71,28 @@ describe Watchdog do
 
     context "new method" do
       it "doesn't raise error if it doesn't redefine extension methods" do
-        existing = Module.new.send :include, extensions
+        existing = Class.new.send :include, extensions
         lambda { existing.send(:define_method, :bling) { } }.should_not raise_error
       end
 
       it "raises error if it redefines extension methods" do
-        existing = Module.new.send :include, extensions
+        existing = Class.new.send :include, extensions
         lambda {
           existing.send(:define_method, :blah) { }
         }.should raise_error(Watchdog::ExtensionMethodExistsError)
       end
 
       it "raises error if it redefines extension methods for module with method_added" do
-        existing = Module.new { def self.method_added(meth); end }
-        existing.send :include, extensions
+        existing = Class.new { def self.method_added(meth); end }.send :include, extensions
         lambda {
           existing.send(:define_method, :blah) { }
         }.should raise_error(Watchdog::ExtensionMethodExistsError)
+      end
+
+      it "doesn't guard if subclass of extended class" do
+        existing = Class.new.send :include, extensions
+        subclass = Class.new(existing)
+        lambda { subclass.send(:define_method, :blah) { } }.should_not raise_error
       end
     end
   end

@@ -9,6 +9,8 @@ module Watchdog
 
   # Guards extension methods from being overwritten
   def self.guard(obj, meth)
+    return if !extensions.key?(obj) && extensions.keys.
+      any? {|e| e.is_a?(Module) && e > obj }
     if extensions[obj].instance_methods.map(&:to_sym).include?(meth)
       raise ExtensionMethodExistsError.new(meth, obj, extensions[obj])
     end
