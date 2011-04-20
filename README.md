@@ -59,6 +59,15 @@ Watchdog also guards over extension modules that define class methods:
     Date.extend DaysTillXmas
     # Date.days_till_xmas ->  253  NOOOO...
 
+Caveats
+=======
+
+Watchdog's protectiveness can be problematic with mocks in a test suite as they love to redefine
+methods. Watchdog provides Watchdog.sleep, a Proc to conditionally turn off guarding extension
+methods. By default, Watchdog sets this so that Rspec mocks are allowed to slip by:
+
+    Watchdog.sleep = lambda { defined? RSpec && !caller.grep(/rspec-mocks/).empty? }
+
 Credits
 =======
 

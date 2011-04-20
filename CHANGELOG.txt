@@ -1,3 +1,6 @@
+== 0.3.0
+* Add Watchdog.sleep
+
 == 0.2.0
 * Fix multiple guards per extended class
 * Fix guarding for subclasses of extended classes
