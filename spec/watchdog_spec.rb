@@ -1,4 +1,5 @@
 require 'watchdog'
+Watchdog.sleep = nil
 
 describe Watchdog do
   def create_methods(obj, *meths)
@@ -102,6 +103,24 @@ describe Watchdog do
       another_extensions = Module.new.extend(Watchdog)
       existing.send :include, another_extensions
       Watchdog::GermanShepard.created.size.should == 1
+    end
+
+    context ".sleep" do
+      def redefined_method
+        existing = Class.new.send :include, extensions
+        lambda { existing.send(:define_method, :blah) { } }
+      end
+      after { Watchdog.sleep = nil }
+
+      it "ignores error if it evaluates to true" do
+        Watchdog.sleep = lambda { true }
+        redefined_method.should_not raise_error
+      end
+
+      it "ignores error if set to false" do
+        Watchdog.sleep = false
+        redefined_method.should raise_error Watchdog::ExtensionMethodExistsError
+      end
     end
   end
 end

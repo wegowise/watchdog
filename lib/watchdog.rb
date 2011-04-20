@@ -3,12 +3,14 @@ require 'watchdog/german_shepard'
 require 'watchdog/version'
 
 module Watchdog
-  class <<self; attr_accessor :extensions, :subclasses; end
+  class <<self; attr_accessor :extensions, :subclasses, :sleep; end
   self.extensions, self.subclasses = {}, []
+  # sleep when rspec mocks redefine guarded methods
+  self.sleep = lambda { defined? RSpec && !caller.grep(/rspec-mocks/).empty? }
 
   # Guards extension methods from being overwritten
   def self.guard(obj, meth)
-    return if subclasses.include?(obj)
+    return if subclasses.include?(obj) || (sleep && sleep.call)
     return subclasses << obj if !extensions.key?(obj) && extensions.keys.
       any? {|e| e.is_a?(Module) && e > obj }
     if extensions[obj].instance_methods.map(&:to_sym).include?(meth)
