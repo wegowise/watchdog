@@ -57,7 +57,7 @@ Watchdog also guards over extension modules that define class methods:
     end
 
     Date.extend DaysTillXmas
-    # Date.days_till_xmas ->  253  NOOOO...
+    # Date.days_till_xmas ->  253  NOOOOO...
 
 Caveats
 =======
